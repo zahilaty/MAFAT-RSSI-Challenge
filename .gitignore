@@ -1,0 +1,22 @@
+*.html
+*.bin
+*.dat
+*.txt
+*.slx
+*.slxc
+*.xml
+*.fda
+*.docx
+*.ipynb
+*.pyc
+*.wav
+*.pth
+*.mat
+*.jpg
+# Pyotrch extention convention for tensors:
+*.pt
+*.zip
+Data/*
+*.sav
+*.docx
+*.asv

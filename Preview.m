@@ -1,7 +1,7 @@
 clc;clear all;close all;
 
 %% Read data:
-[Time, Room_Num, Device_ID, RSSI_Left, RSSI_Right, Num_People] = importfile('mafat_wifi_challenge_training_set_v1');
+[Time, Room_Num, Device_ID, RSSI_Left, RSSI_Right, Num_People] = importfile('Data\mafat_wifi_challenge_training_set_v1');
 
 %% Create a "categorical" Device Id List (numbers from 1 to 84 instead some big numbers)
 UniqList = sort(unique(Device_ID),'ascend'); 
@@ -42,6 +42,7 @@ DeviceEdges = [-Inf 0.5:1:84.5 Inf].';
 figure
 hist3([Room_Num Device_ID_New],'Edges',{RoomEdges DeviceEdges},'CDataMode','auto','FaceColor','interp')
 %histogram2(Room_Num,Device_ID_New,RoomEdges,DeviceEdges)
+xlabel('Room num');ylabel('Device ID');
 
 %% Figure 4 - 2D histogram 
 HumansEdges = [-Inf -0.5:1:3.5 Inf].';
@@ -49,16 +50,21 @@ DeviceEdges = [-Inf 0.5:1:84.5 Inf].';
 figure
 hist3([Num_People Device_ID_New],'Edges',{HumansEdges DeviceEdges},'CDataMode','auto','FaceColor','interp')
 %histogram2(Room_Num,Device_ID_New,RoomEdges,DeviceEdges)
-
+xlabel('Num of people num');ylabel('Device ID');
 
 %% A list of each of the rooms each device saw
 Rooms = {};
 NumOfPeople = {};
+HowManySamplesWeHave = zeros(size(UniqList));
 for k = 1:1:length(UniqList)
     Inds = find(Device_ID_New==k);
+    HowManySamplesWeHave(k) = length(Inds);
     Rooms{k} = unique(Room_Num(Inds));
     NumOfPeople{k} = unique(Num_People(Inds));
 %     if length(unique(Room_Num(Inds))) > 1
 %         disp(k)        %for debug
 %     end
+    %check that all inds of device are one after the another:
+    assert(all(diff(Inds) == 1));
+    
 end
