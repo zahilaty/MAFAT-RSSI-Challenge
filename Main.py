@@ -59,10 +59,9 @@ target_val = torch.reshape(torch.tensor(val_labels),(-1,1)).float().cuda()
 Costs = np.array([])
 Costs_val = np.array([])
 for Epoch in range(EPOCHS):
-    #batch_i, [batch,label] = next(enumerate(train_dataloader)) #for debug
     for batch_i, [batch,label] in enumerate(train_dataloader):
-        if batch_i>0:
-            continue
+        #if batch_i>0: #same as: batch_i, [batch,label] = next(enumerate(train_dataloader)) #for debug
+        #    continue
         optimizer.zero_grad()
         outputs = net(batch)        
         target = torch.reshape(label,(-1,1)).float().cuda()

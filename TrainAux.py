@@ -31,10 +31,7 @@ import scipy.io as sio
     
 class MyDataset(Dataset):
 
-    def __init__(self,
-                 mat_file = 'Data\DataV1.mat',
-                 #transformation = torchaudio.transforms.MelSpectrogram(sample_rate=12500,n_fft=1024,hop_length=512,n_mels=64),
-                 device = "cuda"):
+    def __init__(self,mat_file = 'Data\DataV1.mat',device = "cuda"):
         self.annotations = sio.loadmat(mat_file)["Y"]
         self.audio_mat = sio.loadmat(mat_file)["X"]
         self.device = device
@@ -53,7 +50,7 @@ class MyDataset(Dataset):
         return signal, label
     
 if __name__ == "__main__":
-    MAT_FILE = 'Data\DataV1.mat'
+    MAT_FILE = 'Data\DataV1_mul.mat'
 
     if torch.cuda.is_available():
         device = "cuda"
