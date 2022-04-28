@@ -17,9 +17,9 @@ from helper_func import MyResNet18
 
 ### HyperParams ###
 BATCH_SIZE = 128
-EPOCHS = 30
+EPOCHS = 1
 LEARNING_RATE = 0.0003
-mat_file = 'Data\DataV1.mat'
+mat_file = 'Data\DataV1_bin.mat'
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda') #calling the after-processed dataset
