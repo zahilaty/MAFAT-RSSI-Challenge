@@ -11,8 +11,6 @@ import torch.nn as nn
 #import torch.nn.functional as F
 from torchvision.models.resnet import ResNet, BasicBlock
 
-
-# TBD: fix that so that first layer must be 512 size  
 class MyResNet18(ResNet):
     def __init__(self,InputChannelNum=2,IsSqueezed=0,LastSeqParamList=[512,32],pretrained=True):
         
@@ -45,28 +43,38 @@ class MyResNet18(ResNet):
 # https://discuss.pytorch.org/t/how-can-i-replace-the-forward-method-of-a-predefined-torchvision-model-with-my-customized-forward-function/54224/4    
 # https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py          
 # https://discuss.pytorch.org/t/add-sequential-model-to-sequential/71765 
-    
-def preprocess(X, RSSI_value_selection):
-    """
-    Calculate the features on the selected RSSI on the test set
-    :param X: Dataset to extract features from.
-    :param RSSI_value_selection: Which signal values to use- - in our case it is Average.
-    :return: Test x dataset with features
-    """
-    if RSSI_value_selection=="RSSI_Left":
-        X["RSSI"] = X.RSSI_Left
-    elif RSSI_value_selection=="RSSI_Right":
-        X["RSSI"] = X.RSSI_Right
-    elif RSSI_value_selection=="Min":
-        X["RSSI"] = X[['RSSI_Left','RSSI_Right']].min(axis=1).values
-    elif RSSI_value_selection=="Max":
-        X["RSSI"] = X[['RSSI_Left','RSSI_Right']].max(axis=1).values
-    else: 
-        X["RSSI"] = np.ceil(X[['RSSI_Left','RSSI_Right']].mean(axis=1).values).astype('int')
 
-    X, features_name = extract_features(X)
-    X.drop('Device_ID', axis=1, inplace=True)
-    return X[features_name]
+def DealWithOutputs(regression_or_classification,outputs):
+    if regression_or_classification == 'regression':
+        outputs = outputs*3 #scale the sigmoid to [0,3]
+        return outputs
+    if regression_or_classification == 'classification':
+        # Probabilties calculation is better than softmax, because the metric is MAE(same as L1?)
+        Probs = outputs/outputs.sum(axis=1,keepdims=True)
+        Expectation = (Probs[:,0]*0 + Probs[:,1]*1 + Probs[:,2]*2 + Probs[:,3]*3).reshape(-1,1)
+        return Expectation
+            
+# def preprocess(X, RSSI_value_selection):
+#     """
+#     Calculate the features on the selected RSSI on the test set
+#     :param X: Dataset to extract features from.
+#     :param RSSI_value_selection: Which signal values to use- - in our case it is Average.
+#     :return: Test x dataset with features
+#     """
+#     if RSSI_value_selection=="RSSI_Left":
+#         X["RSSI"] = X.RSSI_Left
+#     elif RSSI_value_selection=="RSSI_Right":
+#         X["RSSI"] = X.RSSI_Right
+#     elif RSSI_value_selection=="Min":
+#         X["RSSI"] = X[['RSSI_Left','RSSI_Right']].min(axis=1).values
+#     elif RSSI_value_selection=="Max":
+#         X["RSSI"] = X[['RSSI_Left','RSSI_Right']].max(axis=1).values
+#     else: 
+#         X["RSSI"] = np.ceil(X[['RSSI_Left','RSSI_Right']].mean(axis=1).values).astype('int')
+
+#     X, features_name = extract_features(X)
+#     X.drop('Device_ID', axis=1, inplace=True)
+#     return X[features_name]
     
     
     
