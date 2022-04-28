@@ -46,4 +46,11 @@ end
 
 X = cast(X,'single');
 Y = cast(Y,"int64");
-save('Data\DataV1.mat','X','Y');
+
+%% Split train and val
+l1 = [0:1:length(Y)-1].';
+l2 = [0:36:length(Y)].';
+Lia = ismember(l1,l2);
+l1 = l1(~Lia);
+%% Save
+save('Data\DataV1.mat','X','Y','l1','l2');
