@@ -32,8 +32,9 @@ import scipy.io as sio
 class MyDataset(Dataset):
 
     def __init__(self,mat_file = 'Data\DataV1.mat',device = "cuda"):
-        self.annotations = sio.loadmat(mat_file)["Y"]
         self.audio_mat = sio.loadmat(mat_file)["X"]
+        self.annotations = sio.loadmat(mat_file)["Y"]
+        self.weights = sio.loadmat(mat_file)["W"]        
         self.device = device
         #self.transformation = transformation.to(self.device)
 
@@ -42,12 +43,13 @@ class MyDataset(Dataset):
 
     def __getitem__(self, index):
         label = self.annotations[index]
+        weight = self.weights[index]
         signal = torch.tensor(self.audio_mat[index,:],dtype=torch.float32) #2x360
         signal = signal.to(self.device)
         signal = signal - signal.mean() # A sort of augmentation..
         signal = torch.unsqueeze(signal, 2) #2x360x1
         #signal = self.transformation(signal)
-        return signal, label
+        return signal, label , weight
     
 if __name__ == "__main__":
     MAT_FILE = 'Data\DataV1_mul.mat'
