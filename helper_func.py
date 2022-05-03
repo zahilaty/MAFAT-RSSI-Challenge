@@ -10,6 +10,7 @@ import torchvision
 import torch.nn as nn
 #import torch.nn.functional as F
 from torchvision.models.resnet import ResNet, BasicBlock
+import numpy as np
 
 class MyResNet18(ResNet):
     def __init__(self,InputChannelNum=2,IsSqueezed=0,LastSeqParamList=[512,32],pretrained=True):
@@ -20,7 +21,7 @@ class MyResNet18(ResNet):
         self.IsSqueezed = IsSqueezed
         
         self.conv1 = nn.Conv2d(InputChannelNum, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False) #changed number of channels from 3 to InputChannelNum. The rest is the same
-        
+
         # cascading layers with add_module
         LastLayers = nn.Sequential()
         for ind,val in enumerate(LastSeqParamList[:-1]):
@@ -53,8 +54,25 @@ def DealWithOutputs(regression_or_classification,outputs):
         Probs = outputs/outputs.sum(axis=1,keepdims=True)
         Expectation = (Probs[:,0]*0 + Probs[:,1]*1 + Probs[:,2]*2 + Probs[:,3]*3).reshape(-1,1)
         return Expectation
-            
+
+def ExtractFeaturesFromVecs(X):
+    #assert(X.shape[0] == 2)
+    #assert(X.shape[1] == 360)
+    c1 = X[1,:] - X[0,:]
+    c2 = np.diff(c1,prepend=0)
+    c3 = 10*np.log10(10**(X[1,:]/10) + 10**(X[0,:]/10))
+    signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1)),axis=0)
+    return signal
+    
 # def preprocess(X, RSSI_value_selection):
+
+    
+    # signal = torch.tensor(self.audio_mat[index,:],dtype=torch.float32) #2x360
+    # signal = signal.to(self.device)
+    # signal = signal - signal.mean() # A sort of augmentation..
+    # signal = torch.unsqueeze(signal, 2) #2x360x1
+        
+        
 #     """
 #     Calculate the features on the selected RSSI on the test set
 #     :param X: Dataset to extract features from.

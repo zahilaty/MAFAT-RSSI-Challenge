@@ -17,6 +17,7 @@
 *.pt
 *.zip
 Data/*
+Checkpoints/*
 *.sav
 *.docx
 *.asv

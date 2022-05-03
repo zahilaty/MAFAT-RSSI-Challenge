@@ -5,8 +5,10 @@ Created on Sun Apr 24 22:15:04 2022
 @author: zahil
 """
 #import os
+import numpy as np
 import torch
 from torch.utils.data import Dataset
+from helper_func import ExtractFeaturesFromVecs
 import scipy.io as sio
 
 ##########################################################
@@ -44,15 +46,16 @@ class MyDataset(Dataset):
     def __getitem__(self, index):
         label = self.annotations[index]
         weight = self.weights[index]
-        signal = torch.tensor(self.audio_mat[index,:],dtype=torch.float32) #2x360
+        X = self.audio_mat[index,:,:] #2x360
+        signal = ExtractFeaturesFromVecs(X) #3x360
+        signal = torch.tensor(signal,dtype=torch.float32)
         signal = signal.to(self.device)
-        signal = signal - signal.mean() # A sort of augmentation..
         signal = torch.unsqueeze(signal, 2) #2x360x1
         #signal = self.transformation(signal)
         return signal, label , weight
     
 if __name__ == "__main__":
-    MAT_FILE = 'Data\DataV1_mul.mat'
+    MAT_FILE = 'Data\DataV2_mul.mat'
 
     if torch.cuda.is_available():
         device = "cuda"
@@ -62,4 +65,4 @@ if __name__ == "__main__":
 
     demod_ds = MyDataset(MAT_FILE,device)
     print(f"There are {len(demod_ds)} samples in the dataset.")
-    signal,label = demod_ds[9]
+    signal,label,weight = demod_ds[9]
