@@ -8,7 +8,7 @@ Created on Sat Nov 13 22:58:41 2021
 import torch
 import torchvision
 import torch.nn as nn
-#import torch.nn.functional as F
+import torch.nn.functional as F
 from torchvision.models.resnet import ResNet, BasicBlock
 import numpy as np
 
@@ -45,6 +45,66 @@ class MyResNet18(ResNet):
 # https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py          
 # https://discuss.pytorch.org/t/add-sequential-model-to-sequential/71765 
 
+##############################################################################################################
+
+class BasicBlock(nn.Module):
+    def __init__(self):
+        super(BasicBlock,self).__init__()
+        
+        
+        self.BlockOne = nn.Sequential(
+            nn.Conv1d(in_channels=1,out_channels=16,kernel_size=5,stride=3),
+            nn.BatchNorm1d(num_features=16),
+            nn.ReLU())
+        
+        self.BlockTwo = nn.Sequential(
+            nn.Conv1d(in_channels=16,out_channels=32,kernel_size=5,stride=3),
+            nn.BatchNorm1d(num_features=32),
+            nn.ReLU(),
+            nn.Dropout(p=0.2))
+
+        dummi_input = torch.zeros((1,1,360))
+        self.tmp_num = num_flat_features(self.BlockTwo(self.BlockOne(dummi_input)))
+        print('during constructor of this object the FC size was calculated to be: ' ,self.tmp_num)
+
+    def forward(self,x):
+        x = self.BlockOne(x)
+        x = self.BlockTwo(x)
+        x = x.view(-1,self.tmp_num)
+        return x
+    
+class Net1D(nn.Module):
+    def __init__(self):
+        super(Net1D,self).__init__()
+        self.CH1 = BasicBlock()
+        self.CH2 = BasicBlock()
+        self.CH3 = BasicBlock()
+
+        self.fc_final = nn.Sequential(nn.Linear(3*39*32,256),nn.BatchNorm1d(256),nn.ReLU(),
+                                      nn.Linear(256,32),nn.BatchNorm1d(32),nn.ReLU(),
+                                      nn.Linear(32,4),nn.Sigmoid())
+                                
+    def forward(self,x):
+        ch1 = self.CH1(torch.unsqueeze(x[:,0,:],1))
+        ch2 = self.CH1(torch.unsqueeze(x[:,1,:],1))
+        ch3 = self.CH1(torch.unsqueeze(x[:,2,:],1))
+        x = torch.concat((ch1,ch2,ch3),dim=1)
+        x = self.fc_final(x)
+        return x
+
+##debug:
+#dummi_input = torch.zeros((100,3,360))
+#net = Net1D()
+#net(dummi_input)
+
+##############################################################################################################
+def num_flat_features(x):
+    size = x.size()[1:] #all dimensions except the batch dimention
+    num_features = 1
+    for s in size:
+        num_features *= s
+    return num_features
+    
 def DealWithOutputs(regression_or_classification,outputs):
     if regression_or_classification == 'regression':
         outputs = outputs*3 #scale the sigmoid to [0,3]

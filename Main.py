@@ -12,7 +12,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import scipy.io as sio
 from TrainAux import MyDataset
-from helper_func import MyResNet18,DealWithOutputs
+from helper_func import MyResNet18,DealWithOutputs,Net1D
 import scipy.io as sio
 from sklearn.metrics import confusion_matrix
 
@@ -22,9 +22,10 @@ EPOCHS = 1
 LEARNING_RATE = 0.0003
 mat_file = 'Data\DataV2_mul.mat'
 regression_or_classification = 'classification' #regression
+net = Net1D().cuda()
 
 ### DataSets ###
-my_ds = MyDataset(mat_file,'cuda') #calling the after-processed dataset
+my_ds = MyDataset(mat_file,'cuda',Return1D = True) #calling the after-processed dataset
 l1 = np.reshape(sio.loadmat(mat_file)["l1"],(-1,)) # we need to save the indexes so we wont have data contimanation
 l2 = np.reshape(sio.loadmat(mat_file)["l2"],(-1,))
 assert len(np.intersect1d(l1,l2)) == 0
@@ -45,10 +46,10 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 #                                        transforms.RandomVerticalFlip(p=0.25)])
 
 ### Net type (anyway the last layer will be sigmoid)
-if regression_or_classification == 'regression':
-    net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
-if regression_or_classification == 'classification':
-    net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
+# if regression_or_classification == 'regression':
+#     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
+# if regression_or_classification == 'classification':
+#     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
 
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 

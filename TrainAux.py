@@ -33,11 +33,12 @@ import scipy.io as sio
     
 class MyDataset(Dataset):
 
-    def __init__(self,mat_file = 'Data\DataV1.mat',device = "cuda"):
+    def __init__(self,mat_file = 'Data\DataV2.mat',device = "cuda",Return1D = False):
         self.audio_mat = sio.loadmat(mat_file)["X"]
         self.annotations = sio.loadmat(mat_file)["Y"]
         self.weights = sio.loadmat(mat_file)["W"]        
         self.device = device
+        self.Return1D = Return1D
         #self.transformation = transformation.to(self.device)
 
     def __len__(self):
@@ -50,7 +51,8 @@ class MyDataset(Dataset):
         signal = ExtractFeaturesFromVecs(X) #3x360
         signal = torch.tensor(signal,dtype=torch.float32)
         signal = signal.to(self.device)
-        signal = torch.unsqueeze(signal, 2) #2x360x1
+        if not self.Return1D:
+            signal = torch.unsqueeze(signal, 2) #2x360x1
         #signal = self.transformation(signal)
         return signal, label , weight
     
@@ -63,6 +65,6 @@ if __name__ == "__main__":
         device = "cpu"
     print(f"Using device {device}")
 
-    demod_ds = MyDataset(MAT_FILE,device)
+    demod_ds = MyDataset(MAT_FILE,device,Return1D = False)
     print(f"There are {len(demod_ds)} samples in the dataset.")
     signal,label,weight = demod_ds[9]
