@@ -67,9 +67,8 @@ Costs = np.array([])
 Costs_val = np.array([])
 min_loss_val = 0.8
 for Epoch in range(EPOCHS):
+    #batch_i, [batch,labels,weights] = next(enumerate(train_dataloader)) #for debug
     for batch_i, [batch,labels,weights] in enumerate(train_dataloader):
-        #if batch_i>0: #same as: batch_i, [batch,label] = next(enumerate(train_dataloader)) #for debug
-        #    continue
         optimizer.zero_grad()
         outputs = net(batch)        
         targets = torch.reshape(labels,(-1,1)).float().cuda()
