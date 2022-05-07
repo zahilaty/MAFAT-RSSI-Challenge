@@ -10,7 +10,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-import scipy.io as sio
 from TrainAux import MyDataset
 from helper_func import MyResNet18,DealWithOutputs,Net1D
 import scipy.io as sio
@@ -18,7 +17,7 @@ from sklearn.metrics import confusion_matrix
 
 ### HyperParams ###
 BATCH_SIZE = 128
-EPOCHS = 1
+EPOCHS = 50
 LEARNING_RATE = 0.0003
 mat_file = 'Data\DataV2_mul.mat'
 regression_or_classification = 'classification' #regression
@@ -53,6 +52,7 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 
+loss_fn_val = nn.L1Loss(reduction='none') 
     
 ### optimizer declaration - must be after net declaration
 optimizer = torch.optim.Adam(net.parameters(),lr=LEARNING_RATE)
@@ -86,23 +86,27 @@ for Epoch in range(EPOCHS):
             outputs_val = net(val_samples)
             outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
             #loss_val = torch.mean(loss_fn(outputs_val,targets_val)*val_weights) #should be AUC for bin case, and L1 (as now) for multy label
-            loss_val = torch.mean(loss_fn(outputs_val,targets_val))
+            loss_val = torch.mean(loss_fn_val(outputs_val,targets_val))
             accuracy_bin = torch.sum((outputs_val>0.5) == torch.reshape(targets_val>0,(-1,1)).cuda())/len(val_set)
             Costs_val = np.append(Costs_val,loss_val.cpu().detach().numpy())
             if loss_val.item() < min_loss_val:
                 min_name = 'ResNet_' + str(round(Costs_val[-1],3)) + '.pth'
                 torch.save(net.state_dict(), min_name)
-                min_loss_val -= 0.1
+                min_loss_val -= 0.05
         net.train()
         print('[%d, %5d] loss: %.3f  Loss_val: %.3f Accuracy: %.1f' %(Epoch + 1, batch_i + 1, Costs[-1],Costs_val[-1],accuracy_bin*100))
 
 ### Save net weights
 print('Finished Training')
-torch.save(net.state_dict(), 'ResNet_' + str(round(Costs_val[-1],3)) + '.pth')
+end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth'
+torch.save(net.state_dict(),end_name)
 
 ### Classification Metric
 with torch.no_grad():
-        net.load_state_dict(torch.load(min_name))
+        if 'min_name' in locals(): 
+            net.load_state_dict(torch.load(min_name))
+        else:
+            net.load_state_dict(torch.load(end_name))
         net.eval()
         outputs_val = net(val_samples)
         outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
