@@ -16,9 +16,9 @@ import scipy.io as sio
 from sklearn.metrics import confusion_matrix
 
 ### HyperParams ###
-BATCH_SIZE = 128
-EPOCHS = 50
-LEARNING_RATE = 0.0003
+BATCH_SIZE = 512
+EPOCHS = 25
+LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat'
 regression_or_classification = 'classification' #regression
 net = Net1D().cuda()
@@ -34,7 +34,7 @@ print(f"There are {len(train_set)} samples in the train set and {len(val_set)} i
 #How to get single sample for testing:   signal, label = demod_ds[0] ; signal.cpu().detach().numpy() ; %varexp --imshow sig
 
 ### DataLoader ### 
-train_dataloader = DataLoader(train_set, batch_size=BATCH_SIZE,drop_last=False)
+train_dataloader = DataLoader(train_set, batch_size=BATCH_SIZE,drop_last=False,shuffle=True)
 val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 
 ### transform ###
