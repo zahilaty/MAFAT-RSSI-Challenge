@@ -47,21 +47,22 @@ class MyResNet18(ResNet):
 
 ##############################################################################################################
 
-class BasicBlock(nn.Module):
+class MyBasicBlock(nn.Module):
     def __init__(self):
-        super(BasicBlock,self).__init__()
+        super(MyBasicBlock,self).__init__()
         
         
         self.BlockOne = nn.Sequential(
             nn.Conv1d(in_channels=1,out_channels=16,kernel_size=5,stride=3),
             nn.BatchNorm1d(num_features=16),
-            nn.ReLU())
+            nn.ReLU(),
+            nn.Dropout(p=0.25))
         
         self.BlockTwo = nn.Sequential(
             nn.Conv1d(in_channels=16,out_channels=32,kernel_size=5,stride=3),
             nn.BatchNorm1d(num_features=32),
             nn.ReLU(),
-            nn.Dropout(p=0.2))
+            nn.Dropout(p=0.5))
 
         dummi_input = torch.zeros((1,1,360))
         self.tmp_num = num_flat_features(self.BlockTwo(self.BlockOne(dummi_input)))
@@ -76,12 +77,12 @@ class BasicBlock(nn.Module):
 class Net1D(nn.Module):
     def __init__(self):
         super(Net1D,self).__init__()
-        self.CH1 = BasicBlock()
-        self.CH2 = BasicBlock()
-        self.CH3 = BasicBlock()
+        self.CH1 = MyBasicBlock()
+        self.CH2 = MyBasicBlock()
+        self.CH3 = MyBasicBlock()
 
-        self.fc_final = nn.Sequential(nn.Linear(3*39*32,256),nn.BatchNorm1d(256),nn.ReLU(),
-                                      nn.Linear(256,32),nn.BatchNorm1d(32),nn.ReLU(),
+        self.fc_final = nn.Sequential(nn.Linear(3*39*32,256),nn.BatchNorm1d(256),nn.ReLU(),nn.Dropout(p=0.5),
+                                      nn.Linear(256,32),nn.BatchNorm1d(32),nn.ReLU(),nn.Dropout(p=0.25),
                                       nn.Linear(32,4),nn.Sigmoid())
                                 
     def forward(self,x):
