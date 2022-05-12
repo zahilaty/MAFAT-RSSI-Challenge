@@ -33,18 +33,14 @@ class MyResNet18(ResNet):
         self.fc = LastLayers
 
 
-    def forward(self, x):
-        if self.InputChannelNum == 1 & self.IsSqueezed == 1:
-            #return self._forward_impl(x[:,[0],:,:]) #[0] instead of 0 to keep the dim
-            x = torch.unsqueeze(x,1)
-            return self._forward_impl(x) 
-        else:
-            return self._forward_impl(x)
+    # def forward(self, x):
+    #     if self.InputChannelNum == 1 & self.IsSqueezed == 1:
+    #         #return self._forward_impl(x[:,[0],:,:]) #[0] instead of 0 to keep the dim
+    #         x = torch.unsqueeze(x,1)
+    #         return self._forward_impl(x) 
+    #     else:
+    #         return self._forward_impl(x)
         
-# https://discuss.pytorch.org/t/how-can-i-replace-the-forward-method-of-a-predefined-torchvision-model-with-my-customized-forward-function/54224/4    
-# https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py          
-# https://discuss.pytorch.org/t/add-sequential-model-to-sequential/71765 
-
 ##############################################################################################################
 
 class MyBasicBlock(nn.Module):
@@ -126,14 +122,7 @@ def ExtractFeaturesFromVecs(X):
     return signal
     
 # def preprocess(X, RSSI_value_selection):
-
     
-    # signal = torch.tensor(self.audio_mat[index,:],dtype=torch.float32) #2x360
-    # signal = signal.to(self.device)
-    # signal = signal - signal.mean() # A sort of augmentation..
-    # signal = torch.unsqueeze(signal, 2) #2x360x1
-        
-        
 #     """
 #     Calculate the features on the selected RSSI on the test set
 #     :param X: Dataset to extract features from.
@@ -153,8 +142,4 @@ def ExtractFeaturesFromVecs(X):
 
 #     X, features_name = extract_features(X)
 #     X.drop('Device_ID', axis=1, inplace=True)
-#     return X[features_name]
-    
-    
-    
-    
+#     return X[features_name]    
