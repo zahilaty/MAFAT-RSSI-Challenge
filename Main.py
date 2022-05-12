@@ -17,14 +17,14 @@ from sklearn.metrics import confusion_matrix
 
 ### HyperParams ###
 BATCH_SIZE = 512
-EPOCHS = 25
+EPOCHS = 0
 LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat'
 regression_or_classification = 'classification' #regression
-net = Net1D().cuda()
+#net = Net1D().cuda()
 
 ### DataSets ###
-my_ds = MyDataset(mat_file,'cuda',Return1D = True) #calling the after-processed dataset
+my_ds = MyDataset(mat_file,'cuda',Return1D = False) #calling the after-processed dataset
 l1 = np.reshape(sio.loadmat(mat_file)["l1"],(-1,)) # we need to save the indexes so we wont have data contimanation
 l2 = np.reshape(sio.loadmat(mat_file)["l2"],(-1,))
 assert len(np.intersect1d(l1,l2)) == 0
@@ -45,10 +45,10 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 #                                        transforms.RandomVerticalFlip(p=0.25)])
 
 ### Net type (anyway the last layer will be sigmoid)
-# if regression_or_classification == 'regression':
-#     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
-# if regression_or_classification == 'classification':
-#     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
+if regression_or_classification == 'regression':
+    net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
+if regression_or_classification == 'classification':
+    net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
 
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 
@@ -66,6 +66,7 @@ val_weights = torch.reshape(val_weights,(-1,1)).float().cuda()
 ### The training loop
 Costs = np.array([])
 Costs_val = np.array([])
+net.train() # In case we re-run this "cell"
 min_loss_val = 0.8
 for Epoch in range(EPOCHS):
     #batch_i, [batch,labels,weights] = next(enumerate(train_dataloader)) #for debug
@@ -124,7 +125,7 @@ y_pred_1 = predicted_method_1.cpu().detach().numpy()
 y_pred_2 = predicted_method_2.cpu().detach().numpy()
 cf_matrix_1 = confusion_matrix(y_true,y_pred_1)
 cf_matrix_2 = confusion_matrix(y_true,y_pred_2)
-sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'cf_matrix_1':cf_matrix_1})
+sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'cf_matrix_1':cf_matrix_1,'cf_matrix_2':cf_matrix_2})
 
 
 #TODO
