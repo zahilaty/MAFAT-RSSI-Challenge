@@ -12,19 +12,7 @@ from helper_func import ExtractFeaturesFromVecs
 import scipy.io as sio
 
 ##########################################################
-
-# class AddGaussianNoise(object):
-#     def __init__(self, mean=0., std=3.): #This WGN is added to the spectogram (dB units) rather than the signal. It has nothing to do with the termal noise!!
-#         self.std = std
-#         self.mean = mean
-        
-#     def __call__(self, tensor):
-#         device = tensor.device
-#         return tensor + torch.randn(tensor.size()).to(device) * self.std + self.mean
-    
-#     def __repr__(self):
-#         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
-    
+   
 class MyDataset(Dataset):
 
     def __init__(self,mat_file = 'Data\DataV2.mat',device = "cuda",Return1D = False):
@@ -42,6 +30,7 @@ class MyDataset(Dataset):
         label = self.annotations[index]
         weight = self.weights[index]
         X = self.audio_mat[index,:,:] #2x360
+        X = my_augmentations(X)
         signal = ExtractFeaturesFromVecs(X) #3x360
         signal = torch.tensor(signal,dtype=torch.float32)
         signal = signal.to(self.device)
@@ -62,3 +51,19 @@ if __name__ == "__main__":
     demod_ds = MyDataset(MAT_FILE,device,Return1D = False)
     print(f"There are {len(demod_ds)} samples in the dataset.")
     signal,label,weight = demod_ds[9]
+
+##########################################################
+import random
+
+def my_augmentations(X):
+    # 1) Anntenas flip 
+    if random.random() > 0.5:
+        X = np.flip(X,0)
+    # 2) Time flip
+    if random.random() > 0.5:
+        X = np.flip(X,1)
+    # 2) Add -2 to +2 dB bias for each channel
+    X = X + np.random.randint(-2,3,(2,1))
+    
+    
+    return X
