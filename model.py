@@ -14,7 +14,7 @@ class model:
         Init the model
         '''
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        net = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True) #should we convert to cude?
+        net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True) #should we convert to cude?
         #net = torch.load('CompleteModel.pt')
         net = net.to(self.device)
         net.eval()
