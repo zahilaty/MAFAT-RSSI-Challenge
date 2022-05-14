@@ -43,6 +43,7 @@ for window in unique_windows:
 print(f'Occupancy prediction: {round(Y_test[0],3)}')
 
 ##############################
+#For the times when we are using old torchvision without adaptive avargepooling
 #net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
 #net.load_state_dict(torch.load('Checkpoints/ResNet_0.515.pth'))
 #torch.save(net.cpu(),'CompleteModel.pt')

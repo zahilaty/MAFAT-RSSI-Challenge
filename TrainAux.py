@@ -12,12 +12,6 @@ from helper_func import ExtractFeaturesFromVecs
 import scipy.io as sio
 
 ##########################################################
-# Random Augmentations:
-    
-# 1) AWGN to all spectogram 
-# 2) Random shift in the time axis of about ~0.3 sec (done with RandomAffine)
-# 3) Random shift in the frequency axis of about 1000Hz (done with RandomAffine)
-#https://towardsdatascience.com/data-augmentation-for-speech-recognition-e7c607482e78
 
 # class AddGaussianNoise(object):
 #     def __init__(self, mean=0., std=3.): #This WGN is added to the spectogram (dB units) rather than the signal. It has nothing to do with the termal noise!!
