@@ -118,7 +118,9 @@ end
 
 % Weights
 lenY = length(Y);
-w0 = sum(Y==0)/length(Y);w1 = sum(Y==1)/length(Y);w2 = sum(Y==2)/length(Y);w3 = sum(Y==3)/length(Y);
+ClassNumY = length(unique(Y));
+Scale = ClassNumY/lenY;
+w0 = sum(Y==0)*Scale;w1 = sum(Y==1)*Scale;w2 = sum(Y==2)*Scale;w3 = sum(Y==3)*Scale;
 W = zeros(size(Y));
 for k = 1:1:length(Y)
     if (Y(k)==0) W(k) = 1/w0; end
@@ -139,6 +141,6 @@ Lia = ismember(l1,ToBeRemove);
 l1 = l1(~Lia);
 
 % Save
-save('Data\DataV2_mul.mat','X','Y','W','l1','l2');
+%save('Data\DataV2_mul.mat','X','Y','W','l1','l2');
 
 end
