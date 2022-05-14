@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from TrainAux import MyDataset
+from TrainAux import MyDataset,my_augmentations
 from helper_func import MyResNet18,DealWithOutputs,Net1D
 import scipy.io as sio
 from sklearn.metrics import confusion_matrix
@@ -71,6 +71,9 @@ min_loss_val = 0.8
 #batch_i, [batch,labels,weights] = next(enumerate(train_dataloader)) #for debug
 for Epoch in range(EPOCHS):
     for batch_i, [batch,labels,weights] in enumerate(train_dataloader):
+        #if batch_i !=3: # needed for augmentations debug
+        #    continue
+        print(batch_i)
         optimizer.zero_grad()
         outputs = net(batch)        
         targets = torch.reshape(labels,(-1,1)).float().cuda()
