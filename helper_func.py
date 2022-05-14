@@ -115,6 +115,7 @@ def DealWithOutputs(regression_or_classification,outputs):
 def ExtractFeaturesFromVecs(X):
     #assert(X.shape[0] == 2)
     #assert(X.shape[1] == 360)
+    #c1 = (X[1,:]-np.mean(X[1,:])) - (X[0,:]-np.mean(X[0,:]))
     c1 = X[1,:] - X[0,:]
     c2 = np.diff(c1,prepend=0)
     c3 = 10*np.log10(10**(X[1,:]/10) + 10**(X[0,:]/10))
