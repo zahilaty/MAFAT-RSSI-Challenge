@@ -44,11 +44,13 @@ class model:
         
         outputs = self.model(signal) #1x4 
         outputs = DealWithOutputs('classification',outputs) #1x1
+        
+        #y = outputs.item() # Error: Prediction values  should be of type int.
+
         # round to nearest int
         predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
-        
         y = int(predicted_method_1.item())
-        
+
         # For track 1: TBD
         #y = 0 if y<0.5 else 2
                
