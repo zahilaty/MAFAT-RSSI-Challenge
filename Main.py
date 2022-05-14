@@ -22,6 +22,7 @@ LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat'
 regression_or_classification = 'classification' #regression
 #net = Net1D().cuda()
+LastCheckPoint = 'Checkpoints\\12_05\\ResNet_0.697.pth' #None ## A manual option to re-train
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda',Return1D = False) #calling the after-processed dataset
@@ -39,10 +40,7 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 
 ### transform ###
 #Constand transforms are defined in the dataset
-# RandomTransforms = transforms.Compose([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0),
-#                                        transforms.RandomRotation(degrees=15),
-#                                        transforms.RandomHorizontalFlip(p=0.5),
-#                                        transforms.RandomVerticalFlip(p=0.25)])
+#RandomTransforms = transforms.Compose([transforms.RandomHorizontalFlip(p=0.5)])
 
 ### Net type (anyway the last layer will be sigmoid)
 if regression_or_classification == 'regression':
@@ -66,10 +64,12 @@ val_weights = torch.reshape(val_weights,(-1,1)).float().cuda()
 ### The training loop
 Costs = np.array([])
 Costs_val = np.array([])
+if LastCheckPoint is not None:
+    net.load_state_dict(torch.load(LastCheckPoint)) 
 net.train() # In case we re-run this "cell"
 min_loss_val = 0.8
+#batch_i, [batch,labels,weights] = next(enumerate(train_dataloader)) #for debug
 for Epoch in range(EPOCHS):
-    #batch_i, [batch,labels,weights] = next(enumerate(train_dataloader)) #for debug
     for batch_i, [batch,labels,weights] in enumerate(train_dataloader):
         optimizer.zero_grad()
         outputs = net(batch)        
@@ -86,8 +86,8 @@ for Epoch in range(EPOCHS):
         with torch.no_grad():
             outputs_val = net(val_samples)
             outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
-            #loss_val = torch.mean(loss_fn(outputs_val,targets_val)*val_weights) #should be AUC for bin case, and L1 (as now) for multy label
-            loss_val = torch.mean(loss_fn_val(outputs_val,targets_val))
+            loss_val = torch.mean(loss_fn_val(outputs_val,targets_val)*val_weights) #should be AUC for bin case, and L1 (as now) for multy label
+            #loss_val = torch.mean(loss_fn_val(outputs_val,targets_val))
             accuracy_bin = torch.sum((outputs_val>0.5) == torch.reshape(targets_val>0,(-1,1)).cuda())/len(val_set)
             Costs_val = np.append(Costs_val,loss_val.cpu().detach().numpy())
             if loss_val.item() < min_loss_val:
@@ -99,8 +99,8 @@ for Epoch in range(EPOCHS):
 
 ### Save net weights
 print('Finished Training')
-end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth'
-torch.save(net.state_dict(),end_name)
+end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth' #manualy write: end_name = LastCheckPoint
+#torch.save(net.state_dict(),end_name)
 
 ### Classification Metric
 with torch.no_grad():
