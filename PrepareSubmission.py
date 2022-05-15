@@ -13,7 +13,7 @@ zipObj.write('model.py')
 zipObj.write('helper_func.py')
 #zipObj.write('CompleteModel.pt')
 zipObj.write('sample_submission\metadata',arcname='metadata')
-zipObj.write('Checkpoints\\14_05\\ResNet_0.685.pth',arcname='NetWeights.pth')
+zipObj.write('Checkpoints\\15_05\\ResNet_0.589.pth',arcname='NetWeights.pth')
 # close the Zip File
 zipObj.close()
 
