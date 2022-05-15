@@ -118,7 +118,7 @@ def ExtractFeaturesFromVecs(X):
     #c1 = (X[1,:]-np.mean(X[1,:])) - (X[0,:]-np.mean(X[0,:]))
     #c3 = 10*np.log10(10**(X[1,:]/10) + 10**(X[0,:]/10))
     Avarage = (X[1,:] + X[0,:])/2.0 
-    diff = X[1,:] - X[0,:]
+    diff = np.abs(X[1,:] - X[0,:])
     c1 = Avarage
     c2 = np.diff(c1,prepend=0)
     c3 = diff

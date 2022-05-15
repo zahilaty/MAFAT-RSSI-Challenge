@@ -30,7 +30,7 @@ class MyDataset(Dataset):
         label = self.annotations[index]
         weight = self.weights[index]
         X = self.audio_mat[index,:,:] #2x360
-        X = my_augmentations(X)
+        #X = my_augmentations(X)
         signal = ExtractFeaturesFromVecs(X) #3x360
         signal = torch.tensor(signal,dtype=torch.float32)
         signal = signal.to(self.device)
