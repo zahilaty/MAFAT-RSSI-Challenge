@@ -15,13 +15,13 @@ import scipy.io as sio
    
 class MyDataset(Dataset):
 
-    def __init__(self,mat_file = 'Data\DataV2.mat',device = "cuda",Return1D = False):
+    def __init__(self,mat_file = 'Data\DataV2.mat',device = "cuda",Return1D = False,augmentations=False):
         self.audio_mat = sio.loadmat(mat_file)["X"]
         self.annotations = sio.loadmat(mat_file)["Y"]
         self.weights = sio.loadmat(mat_file)["W"]        
         self.device = device
         self.Return1D = Return1D
-        #self.transformation = transformation.to(self.device)
+        self.augmentations = augmentations
 
     def __len__(self):
         return len(self.annotations)
@@ -30,7 +30,8 @@ class MyDataset(Dataset):
         label = self.annotations[index]
         weight = self.weights[index]
         X = self.audio_mat[index,:,:] #2x360
-        #X = my_augmentations(X)
+        if self.augmentations:
+            X = my_augmentations(X)
         signal = ExtractFeaturesFromVecs(X) #3x360
         signal = torch.tensor(signal,dtype=torch.float32)
         signal = signal.to(self.device)
@@ -56,14 +57,27 @@ if __name__ == "__main__":
 import random
 
 def my_augmentations(X):
+    
+    ### Numpy version, to act inside get_item:
     # 1) Anntenas flip 
-    if random.random() > 0.5:
+    if random.random() > 0.5: #should not matter now
         X = np.flip(X,0)
     # 2) Time flip
     if random.random() > 0.5:
         X = np.flip(X,1)
-    # 2) Add -2 to +2 dB bias for each channel
+    # 3) Add -2 to +2 dB bias for each channel
     X = X + np.random.randint(-2,3,(2,1))
     
-    
+    ### torch version, to act inside training loop:
+    # device = X.device
+    # X_new = X
+    # # 1) Anntenas flip - was done by the fact that basic features are symettric 
+    # # 2) Time flip - experiment shows it is not good
+    # #X_new = torch.flip(X,dims=[2])
+    # # 3) Add -2 to +2 dB bias for each channel
+    # bias_left_ant = np.random.randint(-2,3)
+    # bias_right_ant = np.random.randint(-2,3)
+    # X_new[:,0,:,:] = X_new[:,0,:,:] + torch.tensor(bias_left_ant/2 + bias_right_ant/2).to(device)
+    # #to the "diff" feature I need to add without abs so symeetri will be reserved (counter intuitive...)
+    # X_new[:,2,:,:] = X_new[:,2,:,:] + torch.tensor(bias_left_ant-bias_right_ant).to(device) 
     return X
