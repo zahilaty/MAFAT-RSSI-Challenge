@@ -25,12 +25,13 @@ regression_or_classification = 'classification' #regression
 LastCheckPoint = None#'Checkpoints\\12_05\\ResNet_0.697.pth' #None ## A manual option to re-train
 
 ### DataSets ###
-my_ds = MyDataset(mat_file,'cuda',Return1D = False) #calling the after-processed dataset
+my_ds = MyDataset(mat_file,'cuda',Return1D = False,augmentations = True) #calling the after-processed dataset
+my_ds_val = MyDataset(mat_file,'cuda',Return1D = False,augmentations = False) #calling the after-processed dataset
 l1 = np.reshape(sio.loadmat(mat_file)["l1"],(-1,)) # we need to save the indexes so we wont have data contimanation
 l2 = np.reshape(sio.loadmat(mat_file)["l2"],(-1,))
 assert len(np.intersect1d(l1,l2)) == 0
 train_set = torch.utils.data.Subset(my_ds, l1)
-val_set = torch.utils.data.Subset(my_ds, l2)
+val_set = torch.utils.data.Subset(my_ds_val, l2)
 print(f"There are {len(train_set)} samples in the train set and {len(val_set)} in validation set.")
 #How to get single sample for testing:   signal, label = demod_ds[0] ; signal.cpu().detach().numpy() ; %varexp --imshow sig
 
@@ -75,6 +76,7 @@ for Epoch in range(EPOCHS):
         #if batch_i !=3: # needed for augmentations debug
         #    continue
         optimizer.zero_grad()
+        #inputs = my_augmentations(batch)
         outputs = net(batch)        
         targets = torch.reshape(labels,(-1,1)).float().cuda()
         weights = torch.reshape(weights,(-1,1)).float().cuda()
@@ -129,7 +131,7 @@ y_pred_1 = predicted_method_1.cpu().detach().numpy()
 y_pred_2 = predicted_method_2.cpu().detach().numpy()
 cf_matrix_1 = confusion_matrix(y_true,y_pred_1)
 cf_matrix_2 = confusion_matrix(y_true,y_pred_2)
-sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'cf_matrix_1':cf_matrix_1,'cf_matrix_2':cf_matrix_2})
+sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'Costs_val_weighted': Costs_val_weighted,'cf_matrix_1':cf_matrix_1,'cf_matrix_2':cf_matrix_2})
 
 
 #TODO
