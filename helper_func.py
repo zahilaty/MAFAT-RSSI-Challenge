@@ -40,7 +40,13 @@ class MyResNet18(ResNet):
     #         return self._forward_impl(x) 
     #     else:
     #         return self._forward_impl(x)
+
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
         
+    def forward(self, x):
+        return x     
 ##############################################################################################################
 
 class MyBasicBlock(nn.Module):
