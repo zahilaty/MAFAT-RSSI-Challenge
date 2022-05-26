@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from TrainAux import MyDataset,my_augmentations
-from helper_func import MyResNet18,DealWithOutputs,Net1D
+from helper_func import MyResNet18,DealWithOutputs,Net1D,Identity
 import scipy.io as sio
 from sklearn.metrics import confusion_matrix
 
@@ -19,10 +19,10 @@ from sklearn.metrics import confusion_matrix
 BATCH_SIZE = 512
 EPOCHS = 0
 LEARNING_RATE = 0.0001
-mat_file = 'Data\DataV2_mul.mat'
+mat_file = 'Data\DataV2_mul.mat' #TODO change data\ to os.join
 regression_or_classification = 'classification' #regression
 #net = Net1D().cuda()
-LastCheckPoint = None#'Checkpoints\\12_05\\ResNet_0.697.pth' #None ## A manual option to re-train
+LastCheckPoint = 'Checkpoints\\16_05_C\\long\\ResNet_0.547.pth' #None ## A manual option to re-train
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda',Return1D = False,augmentations = True) #calling the after-processed dataset
@@ -132,14 +132,3 @@ y_pred_2 = predicted_method_2.cpu().detach().numpy()
 cf_matrix_1 = confusion_matrix(y_true,y_pred_1)
 cf_matrix_2 = confusion_matrix(y_true,y_pred_2)
 sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'Costs_val_weighted': Costs_val_weighted,'cf_matrix_1':cf_matrix_1,'cf_matrix_2':cf_matrix_2})
-
-
-#TODO
-# 1) binary classification will be post-process of regression (avoid unbalanced data)
-# 2) For multylabel use CE or L1 (their metric is MAE)
-# 3) For Binary use focal loss or use  the multy version with round at the end
-
-# 4) change data\ to os.join
-# 5) add if device
-# 6) logs
-
