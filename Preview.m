@@ -1,4 +1,5 @@
 clc;clear all;close all;
+addpath('MatlabFunctions');
 
 %% Read data:
 [Time, Room_Num, Device_ID, RSSI_Left, RSSI_Right, Num_People] = importfile('Data\mafat_wifi_challenge_training_set_v1');
