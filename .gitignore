@@ -23,3 +23,4 @@ Checkpoints/*
 *.asv
 *.fig
 temp/*
+*.pdf
