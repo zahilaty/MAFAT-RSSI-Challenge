@@ -22,7 +22,7 @@ LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat' #TODO change data\ to os.join
 regression_or_classification = 'classification' #regression
 #net = Net1D().cuda()
-LastCheckPoint = 'Checkpoints\\16_05_C\\long\\ResNet_0.547.pth' #None ## A manual option to re-train
+LastCheckPoint = None #'Checkpoints\\16_05_C\\long\\ResNet_0.547.pth' #None ## A manual option to re-train
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda',Return1D = False,augmentations = True) #calling the after-processed dataset
@@ -47,7 +47,7 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 if regression_or_classification == 'regression':
     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
 if regression_or_classification == 'classification':
-    net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
+    net  = MyResNet18(InputChannelNum=5,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
 
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 

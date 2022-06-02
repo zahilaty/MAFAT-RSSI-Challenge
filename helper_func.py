@@ -123,13 +123,21 @@ def ExtractFeaturesFromVecs(X):
     #assert(X.shape[1] == 360)
     #c1 = (X[1,:]-np.mean(X[1,:])) - (X[0,:]-np.mean(X[0,:]))
     #c3 = 10*np.log10(10**(X[1,:]/10) + 10**(X[0,:]/10))
-    Avarage = (X[1,:] + X[0,:])/2.0 
-    diff = np.abs(X[1,:] - X[0,:])
+    x1 = X[0,:]
+    x2 = X[1,:]
+    x1_ZeroMean = x1 - np.mean(x1)
+    x2_ZeroMean = x2 - np.mean(x2)
+    x1_std = np.std(x1)
+    x2_std = np.std(x2)
+    Avarage = (x1 + x2)/2.0 
+    diff = np.abs(x2 - x1)
     c1 = Avarage
     c2 = np.diff(c1,prepend=0)
     c3 = diff
     c4 = np.diff(c3,prepend=0)
-    signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1)),axis=0)
+    c5 = np.clip(np.correlate(x1_ZeroMean,x2_ZeroMean,mode='same')/(x1_std+1e-15)/(x2_std+1e-15),-1.0,1.0)
+    
+    signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1),c5.reshape(1,-1)),axis=0)
     return signal
     
 # def preprocess(X, RSSI_value_selection):
