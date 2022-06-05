@@ -68,6 +68,10 @@ def my_augmentations(X):
     # 3) Add -2 to +2 dB bias for each channel
     X = X + np.random.randint(-2,3,(2,1))
     
+    # 4) Cyclic time shift of both channels
+    T = np.random.randint(-180,180)
+    X = np.roll(X, T, axis=1)
+    
     ### torch version, to act inside training loop:
     # device = X.device
     # X_new = X
