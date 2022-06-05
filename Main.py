@@ -17,7 +17,7 @@ from sklearn.metrics import confusion_matrix
 
 ### HyperParams ###
 BATCH_SIZE = 512
-EPOCHS = 0
+EPOCHS = 1
 LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat' #TODO change data\ to os.join
 regression_or_classification = 'classification' #regression
@@ -30,7 +30,7 @@ my_ds_val = MyDataset(mat_file,'cuda',Return1D = False,augmentations = False) #c
 l1 = np.reshape(sio.loadmat(mat_file)["l1"],(-1,)) # we need to save the indexes so we wont have data contimanation
 l2 = np.reshape(sio.loadmat(mat_file)["l2"],(-1,))
 assert len(np.intersect1d(l1,l2)) == 0
-train_set = torch.utils.data.Subset(my_ds, l1)
+train_set = torch.utils.data.Subset(my_ds, l1[::100]) #sample in the local version
 val_set = torch.utils.data.Subset(my_ds_val, l2)
 print(f"There are {len(train_set)} samples in the train set and {len(val_set)} in validation set.")
 #How to get single sample for testing:   signal, label = demod_ds[0] ; signal.cpu().detach().numpy() ; %varexp --imshow sig
@@ -47,7 +47,7 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 if regression_or_classification == 'regression':
     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
 if regression_or_classification == 'classification':
-    net  = MyResNet18(InputChannelNum=5,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
+    net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
 
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 
@@ -96,10 +96,15 @@ for Epoch in range(EPOCHS):
             accuracy_bin = torch.sum((outputs_val>0.5) == torch.reshape(targets_val>0,(-1,1)).cuda())/len(val_set)
             Costs_val_weighted = np.append(Costs_val_weighted,loss_val_weighted.cpu().detach().numpy())
             Costs_val = np.append(Costs_val,loss_val.cpu().detach().numpy())
-            if loss_val.item() < min_loss_val:
-                min_name = 'ResNet_' + str(round(Costs_val[-1],3)) + '.pth'
-                torch.save(net.state_dict(), min_name)
-                min_loss_val -= 0.05
+            if loss_val.item() < min_loss_val:              
+                min_name = 'ResNet_' + str(round(Costs_val[-1],3))
+                torch.save(net.state_dict(), min_name  + '.pth' )
+                min_loss_val -= 0.025
+                y_true = targets_val.cpu().detach().numpy()
+                predicted_method_1 = torch.round(outputs_val).reshape(-1,)
+                y_pred_1 = predicted_method_1.cpu().detach().numpy()
+                cf_matrix_1 = confusion_matrix(y_true,y_pred_1)
+                sio.savemat(min_name + '.mat', {"Costs": Costs, "Costs_val": Costs_val,'Costs_val_weighted': Costs_val_weighted,'cf_matrix_1':cf_matrix_1})
         net.train()
         print('[%d, %5d] loss: %.3f  Loss_val: %.3f Accuracy: %.1f' %(Epoch + 1, batch_i + 1, Costs[-1],Costs_val[-1],accuracy_bin*100))
 
@@ -111,9 +116,9 @@ end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth' #manualy write: end
 ### Classification Metric
 with torch.no_grad():
         if 'min_name' in locals(): 
-            net.load_state_dict(torch.load(min_name))
-        else:
-            net.load_state_dict(torch.load(end_name))
+            net.load_state_dict(torch.load(min_name + '.pth'))
+        #else:
+            #net.load_state_dict(torch.load(end_name)) #same as not doing anything
         net.eval()
         outputs_val = net(val_samples)
         outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
