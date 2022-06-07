@@ -17,12 +17,12 @@ from sklearn.metrics import confusion_matrix
 
 ### HyperParams ###
 BATCH_SIZE = 512
-EPOCHS = 1
+EPOCHS = 0
 LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat' #TODO change data\ to os.join
 regression_or_classification = 'classification' #regression
 #net = Net1D().cuda()
-LastCheckPoint = None #'Checkpoints\\16_05_C\\long\\ResNet_0.547.pth' #None ## A manual option to re-train
+LastCheckPoint = 'Checkpoints\\05_06\\ResNet_0.473.pth' #None ## A manual option to re-train
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda',Return1D = False,augmentations = True) #calling the after-processed dataset
@@ -48,7 +48,7 @@ if regression_or_classification == 'regression':
     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
 if regression_or_classification == 'classification':
     net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
-
+    #net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[512,32,4],pretrained=True).cuda()
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 
 loss_fn_val = nn.L1Loss(reduction='none') 
@@ -110,7 +110,8 @@ for Epoch in range(EPOCHS):
 
 ### Save net weights
 print('Finished Training')
-end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth' #manualy write: end_name = LastCheckPoint
+#end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth' #manualy write: 
+end_name = LastCheckPoint
 #torch.save(net.state_dict(),end_name)
 
 ### Classification Metric
@@ -123,8 +124,18 @@ with torch.no_grad():
         outputs_val = net(val_samples)
         outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
         predicted_method_1 = torch.round(outputs_val).reshape(-1,)
-        outputs_val = net(val_samples)
-        _, predicted_method_2 = torch.max(outputs_val,1)
+        
+        ShiftList = [-150,-90,-30,0,30,90,150]
+        Ensemble_out = torch.zeros((len(val_set),len(ShiftList)),device=('cuda'))
+        for ind,T in enumerate(ShiftList):
+            shifted_input = torch.roll(val_samples, T, dims=2) #should be other code 
+            outputs_val = net(shifted_input)
+            outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
+            Ensemble_out[:,ind] = outputs_val.reshape(-1,)
+        #predicted_method_2 = torch.mean(Ensemble_out,dim=1)
+        predicted_method_2 = torch.median(Ensemble_out,dim=1)[0]
+        predicted_method_2 = torch.round(predicted_method_2).reshape(-1,)
+        
         correct_method_1 = (predicted_method_1 == targets_val.reshape(-1,)).sum().item()
         correct_method_2 = (predicted_method_2 == targets_val.reshape(-1,)).sum().item()    
 print(f'Accuracy of the network on the test images (estimator1): {100 * correct_method_1 // len(val_set)} %')
@@ -136,4 +147,14 @@ y_pred_1 = predicted_method_1.cpu().detach().numpy()
 y_pred_2 = predicted_method_2.cpu().detach().numpy()
 cf_matrix_1 = confusion_matrix(y_true,y_pred_1)
 cf_matrix_2 = confusion_matrix(y_true,y_pred_2)
-sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'Costs_val_weighted': Costs_val_weighted,'cf_matrix_1':cf_matrix_1,'cf_matrix_2':cf_matrix_2})
+
+### MAE score, after quantization
+DistsMat = np.array([[0,1,2,3],[1,0,1,2],[2,1,0,1],[3,2,1,0]])
+TheRealThingINeed_1 =  np.trace(cf_matrix_1@DistsMat) #smaller is better
+TheRealThingINeed_2 =  np.trace(cf_matrix_2@DistsMat) #smaller is better
+
+sio.savemat('LossVals.mat', {"Costs": Costs, "Costs_val": Costs_val,'Costs_val_weighted': Costs_val_weighted,
+                             'cf_matrix_1':cf_matrix_1,'cf_matrix_2':cf_matrix_2,
+                             'outputs_val':outputs_val.cpu().detach().numpy(),
+                             'Ensemble_out':Ensemble_out.cpu().detach().numpy(),
+                             'targets_val':targets_val.cpu().detach().numpy()})
