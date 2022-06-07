@@ -41,6 +41,23 @@ class MyResNet18(ResNet):
     #     else:
     #         return self._forward_impl(x)
 
+def GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,32],pretrained=True):
+    net = torchvision.models.resnet101(pretrained=pretrained)
+    net.conv1 = nn.Conv2d(InputChannelNum, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False) #changed number of channels from 3 to InputChannelNum. The rest is the same
+    # cascading layers with add_module
+    LastLayers = nn.Sequential()
+    for ind,val in enumerate(LastSeqParamList[:-1]):
+        val_next = LastSeqParamList[ind+1]
+        if ind == len(LastSeqParamList)-2:
+            LastLayers.add_module('layer'+str(ind),nn.Sequential(nn.Dropout(p=0.0),nn.Linear(in_features=val,out_features=val_next,bias=True),nn.Sigmoid()))
+        else:
+            LastLayers.add_module('layer'+str(ind),nn.Sequential(nn.Dropout(p=0.25),nn.Linear(in_features=val,out_features=val_next,bias=True),nn.ReLU()))
+    net.fc = LastLayers
+    return net
+        
+
+    
+    
 class Identity(nn.Module):
     def __init__(self):
         super(Identity, self).__init__()
