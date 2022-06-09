@@ -4,7 +4,7 @@ import numpy as np
 from os.path import isfile
 import joblib
 from sklearn.ensemble import RandomForestClassifier
-from helper_func import MyResNet18,ExtractFeaturesFromVecs,DealWithOutputs
+from helper_func import MyResNet18,ExtractFeaturesFromVecs,DealWithOutputs,GetResNet101
 import os
 
 
@@ -14,7 +14,8 @@ class model:
         Init the model
         '''
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True) #should we convert to cude?
+        #net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=False) #should we convert to cude?
+        net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=False)
         #net = torch.load('CompleteModel.pt')
         net = net.to(self.device)
         net.eval()
