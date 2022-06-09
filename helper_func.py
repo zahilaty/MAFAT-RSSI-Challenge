@@ -51,7 +51,7 @@ def GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,32],pretrained=True):
         if ind == len(LastSeqParamList)-2:
             LastLayers.add_module('layer'+str(ind),nn.Sequential(nn.Dropout(p=0.0),nn.Linear(in_features=val,out_features=val_next,bias=True),nn.Sigmoid()))
         else:
-            LastLayers.add_module('layer'+str(ind),nn.Sequential(nn.Dropout(p=0.25),nn.Linear(in_features=val,out_features=val_next,bias=True),nn.ReLU()))
+            LastLayers.add_module('layer'+str(ind),nn.Sequential(nn.Dropout(p=0.75),nn.Linear(in_features=val,out_features=val_next,bias=True),nn.ReLU()))
     net.fc = LastLayers
     return net
         
