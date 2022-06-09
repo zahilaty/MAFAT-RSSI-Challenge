@@ -129,9 +129,9 @@ with torch.no_grad():
         Ensemble_out = torch.zeros((len(val_set),len(ShiftList)),device=('cuda'))
         for ind,T in enumerate(ShiftList):
             shifted_input = torch.roll(val_samples, T, dims=2) #should be other code 
-            outputs_val = net(shifted_input)
-            outputs_val = DealWithOutputs(regression_or_classification,outputs_val)
-            Ensemble_out[:,ind] = outputs_val.reshape(-1,)
+            tmp_outputs_val = net(shifted_input)
+            tmp_outputs_val = DealWithOutputs(regression_or_classification,tmp_outputs_val)
+            Ensemble_out[:,ind] = tmp_outputs_val.reshape(-1,)
         #predicted_method_2 = torch.mean(Ensemble_out,dim=1)
         predicted_method_2 = torch.median(Ensemble_out,dim=1)[0]
         predicted_method_2 = torch.round(predicted_method_2).reshape(-1,)
