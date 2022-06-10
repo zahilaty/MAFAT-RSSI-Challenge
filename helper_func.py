@@ -142,41 +142,31 @@ def ExtractFeaturesFromVecs(X):
     #c3 = 10*np.log10(10**(X[1,:]/10) + 10**(X[0,:]/10))
     x1 = X[0,:]
     x2 = X[1,:]
+    
+    #x1,x2 = NormlizeX(x1,x2)
+    
     #x1_ZeroMean = x1 - np.mean(x1)
     #x2_ZeroMean = x2 - np.mean(x2)
     #x1_std = np.std(x1)
     #x2_std = np.std(x2)
     Avarage = (x1 + x2)/2.0 
     diff = np.abs(x2 - x1)
+    
     c1 = Avarage
-    c2 = np.diff(c1,prepend=0)
+    c2 = np.diff(c1,append=c1[-1])
     c3 = diff
-    c4 = np.diff(c3,prepend=0)
+    c4 = np.diff(c3,append=c1[-1])
     #c5 = np.clip(np.correlate(x1_ZeroMean,x2_ZeroMean,mode='same')/(x1_std+1e-15)/(x2_std+1e-15),-1.0,1.0)
     
     #signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1),c5.reshape(1,-1)),axis=0)
     signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1)),axis=0)
     return signal
-    
-# def preprocess(X, RSSI_value_selection):
-    
-#     """
-#     Calculate the features on the selected RSSI on the test set
-#     :param X: Dataset to extract features from.
-#     :param RSSI_value_selection: Which signal values to use- - in our case it is Average.
-#     :return: Test x dataset with features
-#     """
-#     if RSSI_value_selection=="RSSI_Left":
-#         X["RSSI"] = X.RSSI_Left
-#     elif RSSI_value_selection=="RSSI_Right":
-#         X["RSSI"] = X.RSSI_Right
-#     elif RSSI_value_selection=="Min":
-#         X["RSSI"] = X[['RSSI_Left','RSSI_Right']].min(axis=1).values
-#     elif RSSI_value_selection=="Max":
-#         X["RSSI"] = X[['RSSI_Left','RSSI_Right']].max(axis=1).values
-#     else: 
-#         X["RSSI"] = np.ceil(X[['RSSI_Left','RSSI_Right']].mean(axis=1).values).astype('int')
 
-#     X, features_name = extract_features(X)
-#     X.drop('Device_ID', axis=1, inplace=True)
-#     return X[features_name]    
+def NormlizeX(x1,x2):
+    # we already saw that whitening the signal (remove dc) is not good,
+    # so I will only remove outliers and scale
+    x1 = np.clip(x1, -70, -20)
+    x2 = np.clip(x2, -70, -20)
+    x1 = x1 / 70
+    x2 = x2 / 70
+    return x1,x2
