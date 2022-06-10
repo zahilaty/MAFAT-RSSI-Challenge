@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from TrainAux import MyDataset,my_augmentations
-from helper_func import MyResNet18,DealWithOutputs,Net1D,Identity
+from helper_func import MyResNet18,DealWithOutputs,Net1D,Identity,GetResNet101
 import scipy.io as sio
 from sklearn.metrics import confusion_matrix
 
@@ -22,7 +22,7 @@ LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat' #TODO change data\ to os.join
 regression_or_classification = 'classification' #regression
 #net = Net1D().cuda()
-LastCheckPoint = 'Checkpoints\\05_06\\ResNet_0.473.pth' #None ## A manual option to re-train
+LastCheckPoint = 'Checkpoints\\08_06\\ResNet_0.473.pth' #None ## A manual option to re-train # 05_06\\ResNet_0.473.pth
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda',Return1D = False,augmentations = True) #calling the after-processed dataset
@@ -47,8 +47,9 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 if regression_or_classification == 'regression':
     net  = MyResNet18(InputChannelNum=3,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
 if regression_or_classification == 'classification':
-    net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
-    #net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[512,32,4],pretrained=True).cuda()
+    #net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=True).cuda()
+    net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=True).cuda()
+    
 ### Creterion - I dont see any reason to use MSE and not MAE at this moment
 loss_fn = nn.L1Loss(reduction='none') 
 loss_fn_val = nn.L1Loss(reduction='none') 
