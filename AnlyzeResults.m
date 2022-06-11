@@ -87,3 +87,19 @@ B = A*[0;1;2;3];
 %% Feature scaling code?
 %A = torch.squeeze(val_samples[17,:,:,0]).cpu().numpy()
 %sio.savemat('tmp.mat',{'A':A})
+
+%%
+s1 = squeeze(X(111,1,:));
+s2 = squeeze(X(111,2,:));
+mean_s = mean([s1;s2]);
+FlipedAroundMean1 = 2*mean_s -s1;
+FlipedAroundMean2 = 2*mean_s -s2;
+figure
+subplot(2,1,1)
+plot(s1,'b');hold on
+plot(s2,'r');hold on
+plot([1:360],ones(360,1)*mean_s,'--k');hold on
+subplot(2,1,2)
+plot(FlipedAroundMean1,'b');hold on
+plot(FlipedAroundMean2,'r');hold on
+plot([1:360],ones(360,1)*mean_s,'--k');hold on
