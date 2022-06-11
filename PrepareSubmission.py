@@ -3,6 +3,8 @@
 Created on Tue May 10 21:22:27 2022
 
 @author: zahil
+
+Follow the manual checklist in model.py before submitting
 """
 from zipfile import ZipFile
 

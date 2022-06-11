@@ -7,6 +7,9 @@ from sklearn.ensemble import RandomForestClassifier
 from helper_func import MyResNet18,ExtractFeaturesFromVecs,DealWithOutputs,GetResNet101
 import os
 
+### Checklist for manual changes before submission:
+# 1) resnet 18 or 101 in line 20
+# 2) Track 1 of 2 in line 26
 
 class model:
     def __init__(self):
@@ -20,6 +23,7 @@ class model:
         net = net.to(self.device)
         net.eval()
         self.model = net
+        self.WhichTrack = 1
         
     def predict(self, X):
         '''
@@ -44,16 +48,24 @@ class model:
         signal =  torch.unsqueeze(signal, 0) #1x2x360x1 (the batch dim)
         
         outputs = self.model(signal) #1x4 
-        outputs = DealWithOutputs('classification',outputs) #1x1
         
-        #y = outputs.item() # Error: Prediction values  should be of type int.
-
-        # round to nearest int
-        predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
-        y = int(predicted_method_1.item())
-
-        # For track 1: TBD
-        #y = 0 if y<0.5 else 2
+        if self.WhichTrack == 2:
+            outputs = DealWithOutputs('classification',outputs) #1x1
+            
+            #y = outputs.item() # Error: Prediction values  should be of type int.
+    
+            # round to nearest int
+            predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
+            y = int(predicted_method_1.item())
+        
+        if self.WhichTrack == 1:
+            Probs = outputs/outputs.sum(axis=1,keepdims=True)
+            prob_preds = torch.sum(Probs[:,1:],axis=1).item()
+            if prob_preds>1.0:
+                prob_preds = 1.0
+            if prob_preds<0.0:
+                prob_preds = 0.0
+            y = prob_preds
                
         return y
 
