@@ -154,3 +154,19 @@ Plot4ClassesSubPlots(ch34_psd,sampled_inds_mat,'CH34 PSD');
 % plot(Vecs(inds1,1),Vecs(inds1,2),'xr');hold on;
 % plot(Vecs(inds2,1),Vecs(inds2,2),'xg');hold on;
 % plot(Vecs(inds3,1),Vecs(inds3,2),'xk');hold on;
+
+%% unique values
+% C = unique(x1,'rows'); returns 16713 rows, meaning that 2211 are  duplicated!!
+[r, c] = size(x1);
+x1_NumOfUniq = zeros(r,1);
+x2_NumOfUniq = zeros(r,1);
+combined_NumOfUniq = zeros(r,1);
+combined = [x1 x2];
+for i=1:r
+   x1_NumOfUniq(i,:) = length(unique(x1(i,:)));
+   x2_NumOfUniq(i,:) = length(unique(x2(i,:)));
+   combined_NumOfUniq(i,:) = length(unique(combined(i,:)));
+end
+Plot4CDF(x1_NumOfUniq,inds0,inds1,inds2,inds3,'CDF - number of unique values',[0 20])
+Plot4CDF(x2_NumOfUniq,inds0,inds1,inds2,inds3,'CDF - number of unique values',[0 20])
+Plot4CDF(combined_NumOfUniq,inds0,inds1,inds2,inds3,'CDF - number of unique values',[0 20])
