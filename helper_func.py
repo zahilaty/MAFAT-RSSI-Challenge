@@ -153,9 +153,9 @@ def ExtractFeaturesFromVecs(X):
     diff = np.abs(x2 - x1)
     
     c1 = Avarage
-    c2 = np.diff(c1,append=c1[-1])
+    c2 = np.diff(c1,prepend=c1[0])
     c3 = diff
-    c4 = np.diff(c3,append=c1[-1])
+    c4 = np.diff(c3,prepend=c3[0])
     #c5 = np.clip(np.correlate(x1_ZeroMean,x2_ZeroMean,mode='same')/(x1_std+1e-15)/(x2_std+1e-15),-1.0,1.0)
     
     #signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1),c5.reshape(1,-1)),axis=0)
