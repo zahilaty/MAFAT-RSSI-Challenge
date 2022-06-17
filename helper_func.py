@@ -162,6 +162,46 @@ def ExtractFeaturesFromVecs(X):
     signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1)),axis=0)
     return signal
 
+def EnsamblePred(net,samples):
+    ShiftList = [-150,-90,-30,0,30,90,150]
+    Ensemble_out = torch.zeros((len(samples),len(ShiftList)),device=('cuda'))
+    for ind,T in enumerate(ShiftList):
+        shifted_input = torch.roll(samples, T, dims=2) #I could have done it in numpy on x1,x2
+        tmp_outputs = net(shifted_input)
+        tmp_outputs = DealWithOutputs('classification',tmp_outputs)
+        Ensemble_out[:,ind] = tmp_outputs.reshape(-1,)
+    #predicted_method_2 = torch.mean(Ensemble_out,dim=1)
+    predicted_method_2 = torch.median(Ensemble_out,dim=1)[0]
+    predicted_method_2 = torch.round(predicted_method_2).reshape(-1,)
+    return predicted_method_2,Ensemble_out
+
+def EnsamblePredForAUC(net,samples):
+    ShiftList = [-150,-90,-30,0,30,90,150]
+    Ensemble_out = torch.zeros((len(samples),len(ShiftList)),device=('cuda'))
+    for ind,T in enumerate(ShiftList):
+        shifted_input = torch.roll(samples, T, dims=2) #I could have done it in numpy on x1,x2
+        tmp_outputs = net(shifted_input) #1x4
+        tmp_Probs = tmp_outputs/tmp_outputs.sum(axis=1,keepdims=True)
+        tmp_prob_preds = torch.sum(tmp_Probs[:,1:],axis=1)
+        Ensemble_out[:,ind] = tmp_prob_preds.reshape(-1,)
+        prob_preds = torch.median(Ensemble_out,dim=1)[0]
+    return prob_preds,Ensemble_out
+
+def GetNumOfUniqValues(combined):
+    uniq = np.unique(combined,axis=1)
+    return uniq.shape[1]
+
+def GetNumOfUniqValues_torch_ver(samples):
+    c1 = torch.squeeze(samples[:,0,:,:]) #176x360
+    c3 = torch.squeeze(samples[:,2,:,:]) #176x360
+    x1 = ((2*c1-c3)/2).cpu().detach().numpy()
+    x2 = ((2*c1+c3)/2).cpu().detach().numpy()
+    combined = np.hstack((x1,x2))
+    NumOfUniqValues = np.zeros((samples.shape[0],1))
+    for k in range(samples.shape[0]):
+        NumOfUniqValues[k] = len(np.unique(combined[k,:]))
+    return NumOfUniqValues
+
 def NormlizeX(x1,x2):
     # we already saw that whitening the signal (remove dc) is not good,
     # so I will only remove outliers and scale
