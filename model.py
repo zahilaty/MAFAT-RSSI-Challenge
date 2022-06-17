@@ -9,6 +9,7 @@ import os
 
 ### Checklist for manual changes before submission:
 # 1) resnet 18 or 101 in line 20
+# 1.5) number of input channels
 # 2) Track 1 of 2 in line 26
 # 3) Ensamble
 
@@ -20,11 +21,12 @@ class model:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         #net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=False) #should we convert to cude?
         net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=False)
+        #net  = GetResNet101(InputChannelNum=5,LastSeqParamList=[2048,512,32,4],pretrained=False)
         #net = torch.load('CompleteModel.pt')
         net = net.to(self.device)
         net.eval()
         self.model = net
-        self.WhichTrack = 1
+        self.WhichTrack = 2
         self.ensemble = False
         
     def predict(self, X):

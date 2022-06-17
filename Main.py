@@ -140,7 +140,7 @@ for Epoch in range(EPOCHS):
 
 ### Save net weights
 print('Finished Training')
-#end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth' #manualy write: 
+#end_name =  'ResNet_' + str(round(Costs_val[-1],3)) + '.pth' 
 end_name = LastCheckPoint
 #torch.save(net.state_dict(),end_name)
 # myfile = min_name + '.pth' #only in the notebook

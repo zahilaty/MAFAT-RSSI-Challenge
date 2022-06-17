@@ -73,9 +73,9 @@ def my_augmentations(X):
     X = np.roll(X, T, axis=1)
     
     # 5) experimental value flip
-    if random.random() > 0.5:
-        M = np.mean(X)
-        X = 2*M-X    
+    # if random.random() > 0.5:
+    #     M = np.mean(X)
+    #     X = 2*M-X    
     
     ### torch version, to act inside training loop:
     # device = X.device
