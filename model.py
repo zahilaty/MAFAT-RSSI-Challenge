@@ -4,12 +4,13 @@ import numpy as np
 from os.path import isfile
 import joblib
 from sklearn.ensemble import RandomForestClassifier
-from helper_func import MyResNet18,ExtractFeaturesFromVecs,DealWithOutputs,GetResNet101
+from helper_func import MyResNet18,ExtractFeaturesFromVecs,DealWithOutputs,GetResNet101,EnsamblePred,EnsamblePredForAUC,GetNumOfUniqValues
 import os
 
 ### Checklist for manual changes before submission:
 # 1) resnet 18 or 101 in line 20
 # 2) Track 1 of 2 in line 26
+# 3) Ensamble
 
 class model:
     def __init__(self):
@@ -24,6 +25,7 @@ class model:
         net.eval()
         self.model = net
         self.WhichTrack = 1
+        self.ensemble = False
         
     def predict(self, X):
         '''
@@ -40,6 +42,7 @@ class model:
         # preprocessing should work on a single window, i.e a dataframe with 360 rows and 4 columns
         Rssi_Left = (X['RSSI_Left'].to_numpy()).reshape(1,-1) #1x360
         Rssi_Right = (X['RSSI_Right'].to_numpy()).reshape(1,-1) #1x360
+        #NumOfUniqValues = GetNumOfUniqValues(np.concatenate((Rssi_Left,Rssi_Right),axis=1))
         Xnew = np.concatenate((Rssi_Left,Rssi_Right),axis=0) #2x360
         signal = ExtractFeaturesFromVecs(Xnew) #3x360
         signal = torch.tensor(signal,dtype=torch.float32)
@@ -47,20 +50,26 @@ class model:
         signal = torch.unsqueeze(signal, 2) #2x360x1
         signal =  torch.unsqueeze(signal, 0) #1x2x360x1 (the batch dim)
         
-        outputs = self.model(signal) #1x4 
-        
         if self.WhichTrack == 2:
-            outputs = DealWithOutputs('classification',outputs) #1x1
-            
-            #y = outputs.item() # Error: Prediction values  should be of type int.
-    
-            # round to nearest int
-            predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
-            y = int(predicted_method_1.item())
+            if self.ensemble == True:
+                predicted_method_2,_ = EnsamblePred(self.model,signal)
+                y = int(predicted_method_2)
+            else:
+                outputs = self.model(signal) #1x4 
+                outputs = DealWithOutputs('classification',outputs) #1x1
+                #y = outputs.item() # Error: Prediction values  should be of type int.
+                # round to nearest int
+                predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
+                y = int(predicted_method_1.item())
         
         if self.WhichTrack == 1:
-            Probs = outputs/outputs.sum(axis=1,keepdims=True)
-            prob_preds = torch.sum(Probs[:,1:],axis=1).item()
+            if self.ensemble == True: 
+                prob_preds,_ = EnsamblePredForAUC(self.model,signal)
+                prob_preds = prob_preds.item()
+            else:
+                outputs = self.model(signal) #1x4 
+                Probs = outputs/outputs.sum(axis=1,keepdims=True)
+                prob_preds = torch.sum(Probs[:,1:],axis=1).item()
             if prob_preds>1.0:
                 prob_preds = 1.0
             if prob_preds<0.0:
