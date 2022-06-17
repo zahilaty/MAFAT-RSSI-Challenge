@@ -125,16 +125,40 @@ def num_flat_features(x):
         num_features *= s
     return num_features
     
-def DealWithOutputs(regression_or_classification,outputs):
-    if regression_or_classification == 'regression':
-        outputs = outputs*3 #scale the sigmoid to [0,3]
-        return outputs
-    if regression_or_classification == 'classification':
-        # Probabilties calculation is better than softmax, because the metric is MAE(same as L1?)
-        Probs = outputs/outputs.sum(axis=1,keepdims=True)
-        Expectation = (Probs[:,0]*0 + Probs[:,1]*1 + Probs[:,2]*2 + Probs[:,3]*3).reshape(-1,1)
-        return Expectation
+def CalcExpectation(outputs):
+    # Probabilties calculation is better than softmax, because the metric is MAE(same as L1?)
+    Probs = outputs/outputs.sum(axis=1,keepdims=True)
+    Expectation = (Probs[:,0]*0 + Probs[:,1]*1 + Probs[:,2]*2 + Probs[:,3]*3).reshape(-1,1)
+    return Expectation
 
+def ConvertTargetsToOrdinal(targets,K=4):
+    # n = len(targets)
+    # for i in range(n):
+    #   if int(tmp_y[i])   == 0: tmp_y[i] = 0.125
+    #   elif int(tmp_y[i]) == 1: tmp_y[i] = 0.375
+    #   elif int(tmp_y[i]) == 2: tmp_y[i] = 0.625
+    #   elif int(tmp_y[i]) == 3: tmp_y[i] = 0.875
+    #   else: print("Fatal logic error ")
+    targets = targets*(1/K)+1/(2*K)
+    return targets
+
+def float_oupt_to_class(oupt, k):
+  # end_pts = np.zeros(k+1, dtype=np.float32) 
+  # delta = 1.0 / k
+  # for i in range(k):
+  #   end_pts[i] = i * delta
+  # end_pts[k] = 1.0
+  # if k=4, [0.0, 0.25, 0.50, 0.75, 1.0] 
+  end_pts = [0.0, 0.25, 0.50, 0.75, 1.0]
+  for i in range(k):
+    if oupt >= end_pts[i] and oupt <= end_pts[i+1]:
+      return i
+
+def Myfloat_oupt_to_class(oupt, K=4):
+    classes = torch.round((oupt-1/(2*K))*K).int()
+    classes[np.where(classes.detach().cpu().numpy()==4)] = 3
+    return classes
+    
 def ExtractFeaturesFromVecs(X):
     #assert(X.shape[0] == 2)
     #assert(X.shape[1] == 360)
@@ -168,7 +192,7 @@ def EnsamblePred(net,samples):
     for ind,T in enumerate(ShiftList):
         shifted_input = torch.roll(samples, T, dims=2) #I could have done it in numpy on x1,x2
         tmp_outputs = net(shifted_input)
-        tmp_outputs = DealWithOutputs('classification',tmp_outputs)
+        tmp_outputs = CalcExpectation(tmp_outputs)
         Ensemble_out[:,ind] = tmp_outputs.reshape(-1,)
     #predicted_method_2 = torch.mean(Ensemble_out,dim=1)
     predicted_method_2 = torch.median(Ensemble_out,dim=1)[0]
