@@ -106,7 +106,7 @@ for Epoch in range(EPOCHS):
                 max_auc_val += 0.02
                 predicted_method_1 = torch.round(outputs_val).reshape(-1,)
                 y_pred_1 = predicted_method_1.cpu().detach().numpy()
-                cf_matrix_1 = confusion_matrix(y_true,y_pred_1)
+                cf_matrix_1 = confusion_matrix(y_true_bin,y_pred_1)
                 sio.savemat(min_name + '.mat', {"Costs": Costs, "Score_val": Score_val,'cf_matrix_1':cf_matrix_1})
         net.train()
         print('[%d, %5d] loss: %.3f  AUC: %.2f' %(Epoch + 1, batch_i + 1, Costs[-1],AUC_val))

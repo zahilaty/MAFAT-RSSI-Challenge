@@ -16,6 +16,13 @@ plot(Costs_val);hold on;
 plot(Costs_val_weighted); 
 ylim([0.2 1.2]);grid on
 
+%% Plot learning curves for AUC
+figure
+subplot(2,1,1)
+plot(Costs,'b');ylim([0 0.09]);grid on
+subplot(2,1,2)
+plot(Score_val,'r');ylim([0 1]);grid on
+
 %% Plot smooth learning curves
 figure;
 tmp1 = reshape(Costs,100,[]);

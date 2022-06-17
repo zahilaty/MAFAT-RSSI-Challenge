@@ -4,12 +4,12 @@ import numpy as np
 from os.path import isfile
 import joblib
 from sklearn.ensemble import RandomForestClassifier
-from helper_func import MyResNet18,ExtractFeaturesFromVecs,DealWithOutputs,GetResNet101,EnsamblePred,EnsamblePredForAUC,GetNumOfUniqValues
+from helper_func import MyResNet18,ExtractFeaturesFromVecs,CalcExpectation,GetResNet101,EnsamblePred,EnsamblePredForAUC,GetNumOfUniqValues
 import os
 
 ### Checklist for manual changes before submission:
 # 1) resnet 18 or 101 in line 20
-# 1.5) number of input channels
+# 1.5) number of input\output channels
 # 2) Track 1 of 2 in line 26
 # 3) Ensamble
 
@@ -21,7 +21,7 @@ class model:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         #net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=False) #should we convert to cude?
         net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=False)
-        #net  = GetResNet101(InputChannelNum=5,LastSeqParamList=[2048,512,32,4],pretrained=False)
+        #net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,1],pretrained=False)
         #net = torch.load('CompleteModel.pt')
         net = net.to(self.device)
         net.eval()
@@ -58,26 +58,29 @@ class model:
                 y = int(predicted_method_2)
             else:
                 outputs = self.model(signal) #1x4 
-                outputs = DealWithOutputs('classification',outputs) #1x1
+                outputs = CalcExpectation(outputs) #1x1
                 #y = outputs.item() # Error: Prediction values  should be of type int.
                 # round to nearest int
                 predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
                 y = int(predicted_method_1.item())
         
-        if self.WhichTrack == 1:
-            if self.ensemble == True: 
-                prob_preds,_ = EnsamblePredForAUC(self.model,signal)
-                prob_preds = prob_preds.item()
-            else:
-                outputs = self.model(signal) #1x4 
-                Probs = outputs/outputs.sum(axis=1,keepdims=True)
-                prob_preds = torch.sum(Probs[:,1:],axis=1).item()
-            if prob_preds>1.0:
-                prob_preds = 1.0
-            if prob_preds<0.0:
-                prob_preds = 0.0
-            y = prob_preds
-               
+        # if self.WhichTrack == 1:
+        #     if self.ensemble == True: 
+        #         prob_preds,_ = EnsamblePredForAUC(self.model,signal)
+        #         prob_preds = prob_preds.item()
+        #     else:
+        #         outputs = self.model(signal) #1x4 
+        #         Probs = outputs/outputs.sum(axis=1,keepdims=True)
+        #         prob_preds = torch.sum(Probs[:,1:],axis=1).item()
+        #     if prob_preds>1.0:
+        #         prob_preds = 1.0
+        #     if prob_preds<0.0:
+        #         prob_preds = 0.0
+        #     y = prob_preds
+        if self.WhichTrack == 1:  
+            outputs = self.model(signal) #1x1
+            y = outputs.item()
+            
         return y
 
     def load(self, dir_path):
