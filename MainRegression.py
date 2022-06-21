@@ -23,10 +23,10 @@ from sklearn.metrics import confusion_matrix,roc_auc_score
 
 ### HyperParams ###
 BATCH_SIZE = 1024
-EPOCHS = 5
+EPOCHS = 0
 LEARNING_RATE = 0.0001
 mat_file = 'Data\DataV2_mul.mat' #TODO change data\ to os.join
-LastCheckPoint = None #'Checkpoints\\16_06\\ResNet_0.441_0.93.pth' #None ## A manual option to re-train # 05_06\\ResNet_0.473.pth
+LastCheckPoint = 'Checkpoints\\18_06\\ResNet_0.608.pth' #None ## A manual option to re-train # 05_06\\ResNet_0.473.pth
 
 ### DataSets ###
 my_ds = MyDataset(mat_file,'cuda',Return1D = False,augmentations = True) #calling the after-processed dataset
@@ -48,8 +48,8 @@ val_dataloader = DataLoader(val_set, batch_size=val_set.dataset.__len__())
 #RandomTransforms = transforms.Compose([transforms.RandomHorizontalFlip(p=0.5)])
 
 ### Net type (anyway the last layer will be sigmoid)
-net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
-#net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,1],pretrained=True).cuda()
+#net  = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=True).cuda()
+net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,1],pretrained=True).cuda()
 
 ### A new try
 #net.fc[0][0].p = 0.9

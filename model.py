@@ -4,7 +4,7 @@ import numpy as np
 from os.path import isfile
 import joblib
 from sklearn.ensemble import RandomForestClassifier
-from helper_func import MyResNet18,ExtractFeaturesFromVecs,CalcExpectation,GetResNet101,EnsamblePred,EnsamblePredForAUC,GetNumOfUniqValues
+from helper_func import MyResNet18,ExtractFeaturesFromVecs,CalcExpectation,GetResNet101,EnsamblePred,EnsamblePredForAUC,GetNumOfUniqValues,Myfloat_oupt_to_class
 import os
 
 ### Checklist for manual changes before submission:
@@ -19,14 +19,17 @@ class model:
         Init the model
         '''
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        #net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,4],pretrained=False) #should we convert to cude?
+        #net = MyResNet18(InputChannelNum=4,IsSqueezed=0,LastSeqParamList=[512,32,1],pretrained=False) #should we convert to cude?
         net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=False)
         #net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,1],pretrained=False)
+        #net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=False,OtherResNet='152')
+        #net  = GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,512,32,4],pretrained=False,OtherResNet='50')
+
         #net = torch.load('CompleteModel.pt')
         net = net.to(self.device)
         net.eval()
         self.model = net
-        self.WhichTrack = 2
+        self.WhichTrack = 21
         self.ensemble = False
         
     def predict(self, X):
@@ -52,7 +55,7 @@ class model:
         signal = torch.unsqueeze(signal, 2) #2x360x1
         signal =  torch.unsqueeze(signal, 0) #1x2x360x1 (the batch dim)
         
-        if self.WhichTrack == 2:
+        if self.WhichTrack == 21:
             if self.ensemble == True:
                 predicted_method_2,_ = EnsamblePred(self.model,signal)
                 y = int(predicted_method_2)
@@ -64,6 +67,12 @@ class model:
                 predicted_method_1 = torch.round(outputs).reshape(-1,) #1,
                 y = int(predicted_method_1.item())
         
+        if self.WhichTrack == 22:
+            outputs = self.model(signal) #1x4 
+            predicted_method_1 = Myfloat_oupt_to_class(outputs, K=4).reshape(-1,)
+            predicted_method_1 = predicted_method_1.reshape(-1,) #1,
+            y = predicted_method_1.item()
+                
         # if self.WhichTrack == 1:
         #     if self.ensemble == True: 
         #         prob_preds,_ = EnsamblePredForAUC(self.model,signal)

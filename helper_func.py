@@ -41,8 +41,13 @@ class MyResNet18(ResNet):
     #     else:
     #         return self._forward_impl(x)
 
-def GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,32],pretrained=True):
-    net = torchvision.models.resnet101(pretrained=pretrained)
+def GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,32],pretrained=True,OtherResNet = None):
+    if OtherResNet is None:
+        net = torchvision.models.resnet101(pretrained=pretrained)
+    elif OtherResNet == '50':
+        net = torchvision.models.resnet50(pretrained=pretrained)  
+    elif OtherResNet == '152':
+        net = torchvision.models.resnet152(pretrained=pretrained)  
     net.conv1 = nn.Conv2d(InputChannelNum, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False) #changed number of channels from 3 to InputChannelNum. The rest is the same
     # cascading layers with add_module
     LastLayers = nn.Sequential()
@@ -56,8 +61,6 @@ def GetResNet101(InputChannelNum=4,LastSeqParamList=[2048,32],pretrained=True):
     return net
         
 
-    
-    
 class Identity(nn.Module):
     def __init__(self):
         super(Identity, self).__init__()
@@ -156,7 +159,7 @@ def float_oupt_to_class(oupt, k):
 
 def Myfloat_oupt_to_class(oupt, K=4):
     classes = torch.round((oupt-1/(2*K))*K).int()
-    classes[np.where(classes.detach().cpu().numpy()==4)] = 3
+    classes[np.where(classes.detach().cpu().numpy()==4)[0]] = 3
     return classes
     
 def ExtractFeaturesFromVecs(X):
