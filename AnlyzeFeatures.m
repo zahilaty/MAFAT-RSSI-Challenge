@@ -1,14 +1,14 @@
 clc;clear all;close all;
 addpath('MatlabFunctions');
-load('E:\Projects\MAFAT_RSSI\Data\DataV2_mul.mat')
+load('E:\Projects\MAFAT_RSSI\Data\DataV5_mul_train.mat')
 
 %% Channels
 x1 = squeeze(X(:,1,:));
 x2 = squeeze(X(:,2,:));
 ch1 = (x1 + x2)/2;
 ch2 = abs(x1 - x2);
-ch3 = [diff(ch1,1,2) zeros(length(ch1),1)];
-ch4 = [diff(ch2,1,2) zeros(length(ch1),1)];
+ch3 = [diff(ch1,1,2) zeros(size(ch1,1),1)];
+ch4 = [diff(ch2,1,2) zeros(size(ch1,1),1)];
 
 %% Sample inds
 n = 10;
