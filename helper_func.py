@@ -187,6 +187,9 @@ def ExtractFeaturesFromVecs(X):
     
     #signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1),c5.reshape(1,-1)),axis=0)
     signal = np.concatenate((c1.reshape(1,-1),c2.reshape(1,-1),c3.reshape(1,-1),c4.reshape(1,-1)),axis=0)
+    
+    # if you think it will better to view it as a picture:
+    # signal = np.concatenate((c1.reshape(1,-1),c3.reshape(1,-1)),axis=0)
     return signal
 
 def EnsamblePred(net,samples):

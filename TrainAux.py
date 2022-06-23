@@ -37,7 +37,9 @@ class MyDataset(Dataset):
         signal = signal.to(self.device)
         if not self.Return1D:
             signal = torch.unsqueeze(signal, 2) #2x360x1
-        #signal = self.transformation(signal)
+        # if you think it will better to view it as a picture:
+        # signal = torch.unsqueeze(signal, 0) #1X2x360
+        # signal = self.transformation(signal)
         return signal, label , weight
     
 if __name__ == "__main__":
