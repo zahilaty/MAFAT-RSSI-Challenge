@@ -1,4 +1,4 @@
-# MAFAT-Radar-Challenge (2022)
+# MAFAT-RSSI-Challenge (2022)
 In this challenge the competitors were asked to detect and count occupants within rooms using WiFi signals (based on the mesured RSSI strength along time).  
 My solution was derived from the observation that an increase in the number of occupants
 in a room is likely to create stronger multipath effects, resulting in a greater variation
