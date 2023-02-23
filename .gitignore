@@ -24,3 +24,4 @@ Checkpoints/*
 *.fig
 temp/*
 *.pdf
+*.xlsx
