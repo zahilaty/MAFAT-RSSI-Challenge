@@ -8,7 +8,7 @@ for a room with three occupants (black label) compared to an empty room (blue la
 
 ![CDF plot](https://github.com/zahilaty/MAFAT-RSSI-Challenge/blob/master/Figures/ExampleForMPImportance.png)
 
-"This particular feature was among the inputs used to train ResNet50, alongside the average
+This particular feature was among the inputs used to train ResNet50, alongside the average
 power and other relevant data. The network was trained to predict the probability of each class,
 which corresponds to the number of occupants in a given space, using L1 loss as the evaluation
 criterion. This approach was necessary because we were dealing with an "ordered loss" scenario,
