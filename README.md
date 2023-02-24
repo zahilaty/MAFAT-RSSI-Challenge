@@ -14,3 +14,7 @@ which corresponds to the number of occupants in a given space, using L1 loss as 
 criterion. This approach was necessary because we were dealing with an "ordered loss" scenario,
 even though the predictions were based on classification rather than regression.  
 A more detailed description will be provided at a later time
+
+# Useful links:
+https://codalab.lisn.upsaclay.fr/competitions/3798  
+https://en.wikipedia.org/wiki/Weighted_least_squares
